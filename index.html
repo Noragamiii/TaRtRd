@@ -1,0 +1,560 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1A2042">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tarot"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Tarot Smith-Waite</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+SC:wght@500;700&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: one working column (max 1040px) under a sticky tab bar; spreads drawn as card tiles, readings flow as position panels.
+   Palette from Pamela Colman Smith's lithograph inks: cobalt ink, chrome-yellow sky, vermilion, leaf green, on blue-grey paper. */
+:root{
+  --bg:#ECEEF3; --surface:#FFFFFF; --surface-2:#F4F5F9; --ink:#1A2042; --muted:#575E80; --line:#D2D6E2;
+  --gold:#D49C14; --gold-soft:#F6E7B8; --gold-ink:#7A5200; --cobalt:#2B47A3; --verm:#B23E2A; --leaf:#2E6B39; --steel:#4F6080;
+  --card-bg:#FFFDF6; --back:#24357F; --back-2:#1A2766; --ok:#2E6B39; --warn:#A8620B; --bad:#B23E2A;
+  --shadow:0 1px 2px rgba(20,25,60,.08),0 6px 18px rgba(20,25,60,.07);
+  --f-display:"Alegreya SC","Alegreya",Georgia,"Times New Roman",serif;
+  --f-serif:"Alegreya",Georgia,"Times New Roman",serif;
+  --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1124; --surface:#151A33; --surface-2:#1B2140; --ink:#E8EAF4; --muted:#A1A7C6; --line:#2C335F;
+  --gold:#EFC23D; --gold-soft:#3A3315; --gold-ink:#F2CC5A; --cobalt:#94A9FF; --verm:#FF8B72; --leaf:#86CC90; --steel:#AAB7D2;
+  --card-bg:#1E2445; --back:#2B3C93; --back-2:#1D2A70; --ok:#86CC90; --warn:#F0B35A; --bad:#FF8B72;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1124; --surface:#151A33; --surface-2:#1B2140; --ink:#E8EAF4; --muted:#A1A7C6; --line:#2C335F;
+  --gold:#EFC23D; --gold-soft:#3A3315; --gold-ink:#F2CC5A; --cobalt:#94A9FF; --verm:#FF8B72; --leaf:#86CC90; --steel:#AAB7D2;
+  --card-bg:#1E2445; --back:#2B3C93; --back-2:#1D2A70; --ok:#86CC90; --warn:#F0B35A; --bad:#FF8B72;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.3); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.65 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--cobalt)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--gold);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-family:var(--f-serif);font-weight:700;line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.4vw,40px)}
+h2{font-size:clamp(22px,3vw,28px)}
+h3{font-size:19px}
+p{margin:0}
+.eyebrow{font:600 12px/1.4 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--gold-ink)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.serif{font-family:var(--f-serif)}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:12px 20px;min-height:58px;flex-wrap:wrap;padding-block:6px}
+.brand{display:flex;align-items:center;gap:10px;font:700 21px/1 var(--f-display);color:var(--ink);text-decoration:none;letter-spacing:.02em}
+.brand svg{width:26px;height:26px;color:var(--gold)}
+.tabs{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;font:500 14px/1 var(--f-body);color:var(--muted);padding:10px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;text-decoration:none}
+.tab:hover{color:var(--ink);background:var(--surface-2)}
+.tab[aria-current="page"]{background:var(--ink);color:var(--surface)}
+@media (max-width:620px){.tabs{margin-left:0;width:100%}.top-in{padding-block:8px 6px}}
+
+main{padding-block:28px 72px}
+.view{display:grid;gap:28px}
+
+/* buttons & fields */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--ink);background:var(--ink);color:var(--surface);font:600 14.5px/1 var(--f-body);padding:12px 18px;border-radius:999px;cursor:pointer;text-decoration:none;min-height:44px}
+.btn:hover{filter:brightness(1.12)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#1A2042}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink);filter:none}
+.btn.sm{padding:8px 12px;min-height:36px;font-size:13.5px}
+.btn.link{background:none;border:0;color:var(--cobalt);padding:6px 4px;min-height:0;font-weight:600}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.field{display:grid;gap:6px;min-width:0}
+.field>label,.lbl{font:600 13px/1.3 var(--f-body);color:var(--muted)}
+input[type=text],input[type=date],input[type=month],input[type=search],input[type=number],select,textarea{width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px}
+textarea{min-height:88px;resize:vertical;line-height:1.5}
+input:focus,select:focus,textarea:focus{border-color:var(--cobalt);outline:none}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:8px 14px;border-radius:999px;cursor:pointer;font:500 14px/1.1 var(--f-body);color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13.5px;cursor:pointer;color:var(--ink);line-height:1.3;text-align:left}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.check input{width:18px;height:18px;margin-top:3px;accent-color:var(--cobalt)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.note{background:var(--gold-soft);border-radius:12px;padding:12px 14px;font-size:14px}
+
+/* card tiles */
+.tc{--w:64px;--suit:var(--gold);position:relative;width:var(--w);aspect-ratio:7/12;max-width:100%;background:var(--card-bg);border:1.5px solid var(--ink);border-radius:calc(var(--w)*.08);padding:calc(var(--w)*.05);flex:none;box-shadow:var(--shadow)}
+.tc .in{height:100%;border:1px solid var(--ink);border-radius:calc(var(--w)*.04);display:grid;grid-template-rows:auto 1fr auto;justify-items:center;align-items:center;overflow:hidden;background:linear-gradient(to bottom,color-mix(in srgb,var(--suit) 26%,transparent),transparent 62%)}
+.tc .num{font:700 calc(var(--w)*.15)/1.15 var(--f-display);padding-top:calc(var(--w)*.04);letter-spacing:.04em}
+.tc svg{width:56%;height:auto;color:var(--suit)}
+.tc .glyph{font:calc(var(--w)*.4)/1 "Segoe UI Symbol","Noto Sans Symbols 2","DejaVu Sans",serif;color:var(--suit)}
+.tc .nm{font:700 calc(var(--w)*.098)/1.12 var(--f-display);text-align:center;padding:0 calc(var(--w)*.04) calc(var(--w)*.05);text-transform:uppercase;letter-spacing:.03em;max-width:100%;overflow-wrap:anywhere}
+.tc.rev .in{transform:rotate(180deg)}
+.tc.img{padding:0;background:#fff;border:1px solid var(--ink);overflow:hidden;border-radius:calc(var(--w)*.06)}
+.tc.img img{display:block;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none}
+.tc.img.rev img{transform:rotate(180deg)}
+.symgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:10px}
+.sym{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:start;background:var(--surface-2);border-radius:10px;padding:8px;font-size:13.5px;line-height:1.45}
+.sym img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.enbox{background:var(--surface-2);border-radius:12px;padding:12px 14px;font-size:14px}
+.enbox b{font-weight:600}
+.sync{display:grid;gap:14px}
+.sync summary{cursor:pointer;font:700 18px var(--f-serif)}
+.sync textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;min-height:70px}
+.ok-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:6px}
+.bad-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:6px}
+.tc.w{--suit:var(--verm)} .tc.c{--suit:var(--cobalt)} .tc.s{--suit:var(--steel)} .tc.p{--suit:var(--leaf)}
+.back{--w:56px;width:var(--w);aspect-ratio:7/12;border-radius:calc(var(--w)*.08);border:1.5px solid var(--ink);background:radial-gradient(circle,var(--gold) 0 1.6px,transparent 2px) 0 0/10px 10px,linear-gradient(160deg,var(--back),var(--back-2));box-shadow:var(--shadow);position:relative}
+.back::after{content:"";position:absolute;inset:4px;border:1px solid color-mix(in srgb,var(--gold) 70%,transparent);border-radius:3px}
+.revtag{display:inline-block;font:600 11px/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--verm);border:1px solid currentColor;border-radius:999px;padding:3px 7px;vertical-align:middle}
+.uptag{display:inline-block;font:600 11px/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--leaf);border:1px solid currentColor;border-radius:999px;padding:3px 7px;vertical-align:middle}
+
+/* home */
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:28px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px}
+.hero h1{margin-block:8px 10px}
+.hero .lede{color:var(--muted);max-width:56ch}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.fan{position:relative;height:210px;display:flex;justify-content:center;align-items:flex-end}
+.fan-card{position:absolute;bottom:6px;transform-origin:50% 120%}
+.today{display:flex;gap:14px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);font-size:14px}
+@media (max-width:760px){.hero{grid-template-columns:1fr;padding:20px}.fan{height:170px;order:-1}}
+.groups{display:grid;gap:22px}
+.group h2{font-size:21px;margin-bottom:10px;display:flex;gap:10px;align-items:baseline}
+.group h2 small{font:500 13px var(--f-body);color:var(--muted)}
+.spread-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.sp{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:start;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;color:var(--ink)}
+.sp:hover{border-color:var(--ink)}
+.sp .cnt{grid-row:span 2;display:grid;place-items:center;width:42px;height:56px;border-radius:7px;border:1.5px solid var(--ink);font:700 18px var(--f-display);background:linear-gradient(to bottom,var(--gold-soft),transparent)}
+.sp b{font:700 17px/1.25 var(--f-serif)}
+.sp span.d{font-size:13.5px;color:var(--muted);line-height:1.45}
+.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;counter-reset:s}
+.steps3>div{background:var(--surface-2);border-radius:12px;padding:14px 16px;font-size:14px}
+.steps3 b{display:block;font-family:var(--f-serif);font-size:17px;margin-bottom:4px}
+.steps3 b::before{counter-increment:s;content:counter(s) ". ";color:var(--gold-ink)}
+@media (max-width:700px){.steps3{grid-template-columns:1fr}}
+
+/* setup */
+.backlink{justify-self:start}
+.setup{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:22px;align-items:start}
+@media (max-width:820px){.setup{grid-template-columns:1fr}}
+.form{display:grid;gap:20px}
+.fs{display:grid;gap:12px;border:0;padding:0;margin:0;min-width:0}
+.fs>legend{font:700 17px var(--f-serif);padding:0;margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:520px){.grid2{grid-template-columns:1fr}}
+.poslist{list-style:none;margin:0;padding:0;display:grid;gap:8px;counter-reset:p}
+.poslist li{display:grid;grid-template-columns:28px 1fr;gap:8px;font-size:14px;line-height:1.45}
+.poslist li::before{counter-increment:p;content:counter(p);display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--surface);font:600 12px var(--f-body)}
+.poslist small{display:block;color:var(--muted)}
+.birthchip{font-size:13.5px;background:var(--surface-2);border-radius:10px;padding:8px 12px}
+
+/* draw */
+.ritual{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 18px}
+.ritual summary{cursor:pointer;font:700 17px var(--f-serif);padding:12px 0}
+.ritual ol{margin:0 0 14px;padding-left:20px;display:grid;gap:8px;font-size:14.5px}
+.slots{display:grid;gap:10px}
+.rart{margin:6px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;max-width:260px}
+.rart svg{width:100%;height:auto;display:block}
+.rart figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:2px}
+.ritual li .rart{margin:4px 0 2px}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0}
+.rgrid .rart{max-width:none;margin:0}
+.slot{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:12px 14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.slot.done{border-color:color-mix(in srgb,var(--ink) 40%,var(--line))}
+.pnum{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--surface);font:600 13px var(--f-body)}
+.slot .si b{display:block;font:700 16px/1.3 var(--f-serif)}
+.slot .si small{color:var(--muted);font-size:13px;line-height:1.4;display:block}
+.slot .pick{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.slot .pickname{font-size:13.5px;line-height:1.3;max-width:150px}
+@media (max-width:560px){.slot{grid-template-columns:30px minmax(0,1fr)}.slot .pick{grid-column:1/-1;justify-content:flex-start}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px}
+.deckgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:8px}
+.deckgrid .back{--w:100%;width:100%;cursor:pointer;border-radius:5px;transition:transform .15s}
+.deckgrid button{border:0;padding:0;background:none;position:relative;cursor:pointer;border-radius:6px}
+.deckgrid button:hover .back{transform:translateY(-3px)}
+.deckgrid button[disabled] .back{opacity:.25;transform:none}
+.deckgrid .order{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#1A2042;font:700 13px var(--f-body)}
+.piles{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;padding-block:8px}
+.pile{border:0;background:none;cursor:pointer;display:grid;justify-items:center;gap:8px;font:600 13.5px var(--f-body);color:var(--ink)}
+.pile .stack{position:relative;width:70px;height:120px}
+.pile .stack .back{--w:70px;position:absolute;left:0;top:0}
+.pile:hover .stack{transform:translateY(-4px)}
+.shuffle-anim .back{animation:shuf .5s ease-in-out infinite alternate}
+@keyframes shuf{from{transform:translateX(-14px) rotate(-6deg)}to{transform:translateX(14px) rotate(6deg)}}
+
+/* result */
+.rhead{display:grid;gap:8px}
+.rhead .meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+.question{font:italic 400 19px/1.45 var(--f-serif);border-left:3px solid var(--gold);padding-left:14px}
+.map{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;overflow-x:auto}
+.mapflex{display:flex;flex-wrap:wrap;gap:16px 14px;align-items:flex-start}
+.mslot{display:grid;justify-items:center;gap:6px;width:82px;text-align:center;font-size:12px;line-height:1.3;color:var(--muted);cursor:pointer;background:none;border:0;padding:0}
+.mslot .pn{font:600 11px var(--f-body);color:var(--ink)}
+.mapgroup{display:grid;gap:8px;padding:10px;border:1px dashed var(--line);border-radius:12px}
+.mapgroup>.gl{font:700 14px var(--f-serif);color:var(--ink)}
+.celtic{display:grid;grid-template-columns:repeat(4,78px);grid-template-rows:repeat(4,auto);gap:10px 10px;justify-content:center;min-width:min-content}
+.celtic .mslot{width:78px}
+.celtic .cross{position:relative}
+.celtic .cross .x2{position:absolute;left:50%;top:73px;transform:translate(-50%,-50%) rotate(90deg);z-index:2;border:0;background:none;padding:0;cursor:pointer}
+.verdict{display:grid;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;border-top:5px solid var(--gold)}
+.verdict .big{font:700 clamp(26px,4vw,34px)/1.1 var(--f-serif)}
+.meter{height:10px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px;background:var(--gold)}
+.optrow{display:grid;grid-template-columns:minmax(0,1fr) 54px;gap:6px 12px;align-items:center}
+.optrow .ol{font:700 15px var(--f-serif)}
+.optrow .pc{font:600 14px var(--f-body);text-align:right;font-variant-numeric:tabular-nums}
+.optrow .meter{grid-column:1/-1}
+.daygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.dg{background:var(--surface-2);border-radius:12px;padding:12px 14px;font-size:14px}
+.dg b{display:block;font:600 12px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.pr{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.pr .side{display:grid;justify-items:center;gap:8px;align-content:start}
+.pr .body{display:grid;gap:10px;min-width:0}
+.pr .ptitle{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pr .ptitle .pnum{width:26px;height:26px;font-size:12px}
+.pr .ptitle b{font:700 16px/1.3 var(--f-body);color:var(--muted)}
+.pr .pd{font-size:13px;color:var(--muted)}
+.pr h3{font-size:22px}
+.pr h3 small{font:italic 400 15px var(--f-serif);color:var(--muted)}
+.pr .main{font-size:15.5px;max-width:68ch}
+.pr .kw{font-size:13.5px;color:var(--muted)}
+.pr .adv{font-size:14.5px;background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.pr details{font-size:14px}
+.pr details summary{cursor:pointer;color:var(--cobalt);font-weight:600}
+.pr dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:10px 0 0}
+.pr dt{font-weight:600}
+.pr dd{margin:0;color:var(--ink)}
+@media (max-width:560px){.pr{grid-template-columns:1fr}.pr .side{justify-items:start;grid-auto-flow:column;justify-content:start;align-items:center}.pr dl{grid-template-columns:1fr}.pr dt{margin-top:6px}}
+.patterns ul{margin:8px 0 0;padding-left:20px;display:grid;gap:6px;font-size:14.5px}
+.ai{display:grid;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
+.ai-out{font-size:15.5px;line-height:1.7;max-width:72ch}
+.ai-out h4{font:700 19px var(--f-serif);margin:18px 0 6px}
+.ai-out h5{font:700 16px var(--f-serif);margin:14px 0 4px}
+.ai-out p{margin:0 0 10px}
+.ai-out ul,.ai-out ol{margin:0 0 10px;padding-left:22px}
+.ai-out li{margin-bottom:4px}
+.thinking{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:14px}
+.dots{display:inline-flex;gap:4px}.dots i{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:dot 1s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.qa{display:grid;gap:10px}
+.qa .q{font-weight:600}
+.qa .a{border-left:3px solid var(--line);padding-left:12px}
+.save{display:grid;gap:12px}
+
+/* library */
+.libbar{display:grid;gap:12px}
+.libgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:16px 12px}
+.libitem{display:grid;justify-items:center;gap:6px;background:none;border:0;cursor:pointer;color:var(--ink);text-align:center;font-size:12.5px;line-height:1.3;padding:4px;border-radius:10px}
+.libitem:hover{background:var(--surface)}
+.libitem small{color:var(--muted)}
+.detail{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px}
+.detail .facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px;margin-top:10px}
+.detail .facts dt{color:var(--muted)}
+.detail .facts dd{margin:0}
+.twocol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.twocol>div{background:var(--surface-2);border-radius:12px;padding:14px}
+.twocol h4{font-size:17px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.twocol dl{display:grid;gap:4px;margin:8px 0 0;font-size:14px}
+.twocol dt{font-weight:600;margin-top:6px}
+.twocol dd{margin:0}
+@media (max-width:640px){.detail{grid-template-columns:1fr}.twocol{grid-template-columns:1fr}}
+
+/* guide */
+.guide{display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;align-items:start}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 80px);display:grid;gap:2px;font-size:14px}
+.toc a{color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:8px}
+.toc a:hover{background:var(--surface);color:var(--ink)}
+.art{display:grid;gap:30px;max-width:72ch}
+.art section{display:grid;gap:12px;scroll-margin-top:90px}
+.art h2{font-size:26px}
+.art h3{margin-top:6px}
+.art p,.art li{font-size:15.5px}
+.art ul,.art ol{margin:0;padding-left:22px;display:grid;gap:6px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tbl table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+.tbl th,.tbl td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font:600 12.5px var(--f-body);letter-spacing:.04em;color:var(--muted);background:var(--surface-2)}
+.tbl tr:last-child td{border-bottom:0}
+.good{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}
+@media (max-width:860px){.guide{grid-template-columns:1fr}.toc{position:static;display:flex;flex-wrap:wrap;gap:6px}.toc a{border:1px solid var(--line);background:var(--surface)}}
+
+/* journal */
+.jbar{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:12px}
+@media (max-width:620px){.jbar{grid-template-columns:1fr}}
+.jlist{display:grid;gap:10px}
+.jitem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.jitem .jt{font:700 17px/1.3 var(--f-serif)}
+.jitem .jm{font-size:13px;color:var(--muted);display:flex;gap:6px 12px;flex-wrap:wrap}
+.jitem .jq{font-size:14.5px;font-style:italic}
+.jitem .jcards{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.jitem .jact{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+@media (max-width:560px){.jitem{grid-template-columns:1fr}.jitem .jact{flex-direction:row;align-items:center}}
+.empty{display:grid;gap:10px;justify-items:start;background:var(--surface);border:1px dashed var(--line);border-radius:16px;padding:26px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font:700 26px var(--f-serif);font-variant-numeric:tabular-nums}
+.tag{font:600 11px/1 var(--f-body);letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:4px 8px;background:var(--surface-2);color:var(--muted)}
+
+/* modal & toast */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,14,35,.55);display:grid;place-items:center;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.modal-box{background:var(--bg);border-radius:18px;width:min(860px,100%);max-height:100%;display:grid;grid-template-rows:auto 1fr;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modal-head{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--surface);border-bottom:1px solid var(--line)}
+.modal-head h2{font-size:20px}
+.modal-body{overflow:auto;padding:18px;display:grid;gap:16px;align-content:start}
+.xbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;width:40px;height:40px;cursor:pointer;font-size:20px;line-height:1;color:var(--ink);flex:none}
+.pickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:12px 10px}
+.pickgrid .libitem[disabled]{opacity:.3;cursor:not-allowed}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-size:14px;z-index:60;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#xem" data-act="home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path fill="currentColor" d="M20 2l3.6 11.2L35 9l-5.6 10.4L40 23l-11.2 2.8L31 38l-11-6.4L9 38l2.2-12.2L0 23l10.6-3.6L5 9l11.4 4.2z"/></svg>
+      Tarot Smith-Waite
+    </a>
+    <nav class="tabs" aria-label="Mục chính">
+      <a class="tab" href="#xem" data-tab="xem">Xem bài</a>
+      <a class="tab" href="#tra-bai" data-tab="tra-bai">Tra 78 lá</a>
+      <a class="tab" href="#huong-dan" data-tab="huong-dan">Hướng dẫn</a>
+      <a class="tab" href="#nhat-ky" data-tab="nhat-ky">Nhật ký</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="v-xem" class="view" aria-live="polite"></section>
+  <section id="v-tra-bai" class="view" hidden></section>
+  <section id="v-nhat-ky" class="view" hidden></section>
+
+  <section id="v-huong-dan" class="view" hidden>
+    <div class="rhead">
+      <p class="eyebrow">Hướng dẫn đọc bài</p>
+      <h1>Cách xem tarot với bộ Smith-Waite</h1>
+      <p class="muted" style="max-width:62ch">Từ chuẩn bị, đặt câu hỏi, xáo – cắt – bốc bài, đến cách đọc một trải bài, xem cho người khác và kiểm chứng dự báo.</p>
+    </div>
+    <div class="guide">
+      <nav class="toc" aria-label="Mục lục hướng dẫn">
+        <a href="#g-deck">Bộ bài của bạn</a>
+        <a href="#g-structure">Cấu trúc 78 lá</a>
+        <a href="#g-prepare">Chuẩn bị</a>
+        <a href="#g-question">Đặt câu hỏi</a>
+        <a href="#g-count">Bốc mấy lá?</a>
+        <a href="#g-draw">Xáo – cắt – bốc</a>
+        <a href="#g-reversed">Lá ngược</a>
+        <a href="#g-read">Đọc một trải bài</a>
+        <a href="#g-timing">Thời điểm</a>
+        <a href="#g-others">Xem cho người khác</a>
+        <a href="#g-birth">Lá chủ mệnh</a>
+        <a href="#g-journal">Nhật ký &amp; kiểm chứng</a>
+        <a href="#g-install">Cài lên Mac &amp; iPhone</a>
+        <a href="#g-limits">Giới hạn</a>
+      </nav>
+      <article class="art">
+        <section id="g-deck">
+          <h2>Bộ bài của bạn</h2>
+          <p>Smith-Waite Tarot Centennial Edition do U.S. Games Systems phát hành năm 2009, nhân kỷ niệm 100 năm bộ Rider–Waite gốc (William Rider &amp; Son, London, tháng 12/1909). A. E. Waite soạn hệ thống ý nghĩa; Pamela Colman Smith vẽ toàn bộ 78 lá. Tên "Smith-Waite" đặt tên họa sĩ lên trước để ghi nhận đóng góp của bà. Bản Centennial tái hiện màu sắc trầm, nét vẽ của những bản in đầu tiên.</p>
+          <ul>
+            <li><b>Thứ tự Waite:</b> Sức Mạnh là lá VIII, Công Lý là lá XI (Waite đổi chỗ hai lá này để khớp Sư Tử và Thiên Bình). App dùng đúng thứ tự in trên bài của bạn.</li>
+            <li><b>Ẩn phụ có tranh cảnh:</b> các lá số 2–10 đều có cảnh người và vật cụ thể – đây là điểm mạnh nhất của hệ RWS. Khi đọc, hãy nhìn tranh: ai đang làm gì, nhìn về hướng nào, trời sáng hay tối.</li>
+            <li><b>Bảo quản:</b> xáo kiểu chồng tay (overhand) hoặc trộn trên mặt bàn; hạn chế xáo bẻ cong (riffle) để bài không gãy góc.</li>
+          </ul>
+        </section>
+
+        <section id="g-structure">
+          <h2>Cấu trúc 78 lá</h2>
+          <p><b>22 lá Ẩn chính</b> (0 – XXI) là "hành trình của Chàng Khờ": những bài học lớn, bước ngoặt, yếu tố vượt ngoài chuyện thường ngày. <b>56 lá Ẩn phụ</b> chia bốn bộ, mỗi bộ 14 lá (Át – 10 và bốn lá triều đình), mô tả đời sống hằng ngày.</p>
+          <div class="tbl"><table>
+            <thead><tr><th>Bộ</th><th>Nguyên tố</th><th>Lĩnh vực</th><th>Tốc độ (gợi ý)</th></tr></thead>
+            <tbody>
+              <tr><td><b>Gậy</b> · Wands</td><td>Lửa</td><td>Hành động, đam mê, sự nghiệp, sáng tạo, ý chí</td><td>Nhanh – tính bằng ngày</td></tr>
+              <tr><td><b>Cốc</b> · Cups</td><td>Nước</td><td>Cảm xúc, tình yêu, các mối quan hệ, trực giác</td><td>Chậm – tính bằng tháng</td></tr>
+              <tr><td><b>Kiếm</b> · Swords</td><td>Khí</td><td>Suy nghĩ, giao tiếp, xung đột, quyết định, sự thật</td><td>Vừa – tính bằng tuần</td></tr>
+              <tr><td><b>Tiền</b> · Pentacles</td><td>Đất</td><td>Tiền bạc, công việc, vật chất, cơ thể, sức khỏe</td><td>Rất chậm – nhiều tháng đến năm</td></tr>
+            </tbody></table></div>
+          <h3>Ý nghĩa con số</h3>
+          <div class="tbl"><table>
+            <thead><tr><th>Số</th><th>Chủ đề</th><th>Số</th><th>Chủ đề</th></tr></thead>
+            <tbody>
+              <tr><td>Át (1)</td><td>Hạt giống, khởi đầu, tiềm năng</td><td>6</td><td>Hài hòa, hồi phục, cho – nhận</td></tr>
+              <tr><td>2</td><td>Lựa chọn, cân bằng, hợp tác</td><td>7</td><td>Đánh giá, kiên nhẫn, thử thách nội tâm</td></tr>
+              <tr><td>3</td><td>Phát triển, sáng tạo, kết nối</td><td>8</td><td>Chuyển động, nỗ lực, làm chủ</td></tr>
+              <tr><td>4</td><td>Ổn định, nền tảng, củng cố</td><td>9</td><td>Gần hoàn thành, đỉnh điểm</td></tr>
+              <tr><td>5</td><td>Xung đột, biến động, thử thách</td><td>10</td><td>Kết thúc chu kỳ, trọn vẹn, chuyển giao</td></tr>
+            </tbody></table></div>
+          <h3>Lá triều đình</h3>
+          <p><b>Tiểu Đồng (Page)</b>: tin tức, học hỏi, người trẻ. <b>Hiệp Sĩ (Knight)</b>: hành động, di chuyển, theo đuổi. <b>Nữ Hoàng (Queen)</b>: làm chủ nội tâm, nuôi dưỡng. <b>Vua (King)</b>: làm chủ bên ngoài, lãnh đạo, quyết định. Lá triều đình có thể là một người thật, hoặc một thái độ bạn cần có.</p>
+        </section>
+
+        <section id="g-prepare">
+          <h2>Chuẩn bị</h2>
+          <ul>
+            <li>Chọn lúc yên tĩnh, mặt bàn sạch; nếu thích, trải một tấm khăn riêng cho bài.</li>
+            <li>Hít thở chậm 3 nhịp, giữ câu hỏi trong đầu. Tâm thế bình tĩnh quan trọng hơn mọi nghi lễ.</li>
+            <li>Không xem khi đang rất giận, hoảng loạn, say, hoặc đã hỏi cùng một câu nhiều lần trong ngày – kết quả lúc đó thường phản ánh nỗi lo hơn là tình huống.</li>
+            <li>"Làm sạch" bài (tùy chọn): xáo kỹ cả bộ, xếp lại theo thứ tự 0 → King of Pentacles, hoặc gõ nhẹ lên chồng bài khi chuyển sang người hỏi mới.</li>
+          </ul>
+        </section>
+
+        <section id="g-question">
+          <h2>Đặt câu hỏi</h2>
+          <p>Câu hỏi tốt là câu mở, có khung thời gian, và đặt bạn ở vị trí người hành động. Tarot trả lời "điều gì đang diễn ra, xu hướng nào, nên làm gì" tốt hơn là "chắc chắn có hay không".</p>
+          <div class="tbl"><table>
+            <thead><tr><th>Thay vì hỏi</th><th>Hãy hỏi</th></tr></thead>
+            <tbody>
+              <tr><td class="bad">Tôi có giàu không?</td><td class="good">Tôi nên làm gì để cải thiện tài chính trong 3 tháng tới?</td></tr>
+              <tr><td class="bad">Anh ấy có yêu tôi không?</td><td class="good">Tôi cần hiểu gì về mối quan hệ này lúc này?</td></tr>
+              <tr><td class="bad">Có nên đầu tư không?</td><td class="good">Nếu đầu tư vào [kênh cụ thể] trong quý này, tôi cần lưu ý điều gì?</td></tr>
+              <tr><td class="bad">Tôi có bị bệnh không?</td><td class="good">Tôi nên chăm sóc sức khỏe và tinh thần thế nào trong tháng này?</td></tr>
+              <tr><td class="bad">Nên làm A hay B?</td><td class="good">Dùng trải bài "Chọn A, B hay C": đặt tên cụ thể cho từng lựa chọn.</td></tr>
+            </tbody></table></div>
+          <p>Một câu hỏi – một trải bài. Nếu thấy chưa rõ, đừng bốc lại ngay cùng câu đó; hãy đặt câu hỏi nhỏ hơn, cụ thể hơn, hoặc rút thêm một lá "làm rõ".</p>
+        </section>
+
+        <section id="g-count">
+          <h2>Bốc mấy lá?</h2>
+          <p>Số lá do <b>trải bài</b> quyết định: mỗi vị trí trong trải bài là đúng <b>1 lá</b>. App ghi rõ số lá trên từng trải bài và ở bước bốc. Bạn chỉ rút đủ số đó, không hơn.</p>
+          <div class="tbl"><table>
+            <thead><tr><th>Trải bài</th><th>Số lá</th><th>Khi nào dùng</th></tr></thead>
+            <tbody>
+              <tr><td>Lá bài hôm nay · Có/Không 1 lá</td><td><b>1</b></td><td>Hỏi nhanh, xem năng lượng một ngày. Hợp nhất cho người mới.</td></tr>
+              <tr><td>Quá khứ – Hiện tại – Tương lai · Có/Không 3 lá</td><td><b>3</b></td><td>Một vấn đề cụ thể, muốn thấy diễn biến.</td></tr>
+              <tr><td>Tôi nên làm gì? · May mắn</td><td><b>4</b></td><td>Cần lời khuyên hành động.</td></tr>
+              <tr><td>Sức khỏe · Phòng tránh rủi ro</td><td><b>5</b></td><td>Xem kỹ một khía cạnh.</td></tr>
+              <tr><td>Tình cảm · Sự nghiệp · Tài chính</td><td><b>6</b></td><td>Chủ đề lớn, nhiều mặt.</td></tr>
+              <tr><td>Chọn A, B hay C</td><td><b>6 hoặc 8</b></td><td>1 lá “bạn lúc này” + 2 lá cho mỗi lựa chọn + 1 lá lời khuyên.</td></tr>
+              <tr><td>Dự báo 7 ngày · Dự báo tháng</td><td><b>9</b></td><td>Lên kế hoạch tuần, tháng.</td></tr>
+              <tr><td>Thập tự Celtic</td><td><b>10</b></td><td>Toàn cảnh một vấn đề quan trọng.</td></tr>
+              <tr><td>12 tháng tới</td><td><b>13</b></td><td>Đầu năm, sinh nhật, đầu chặng mới.</td></tr>
+            </tbody></table></div>
+          <p><b>Người mới nên bắt đầu với 1 lá mỗi ngày</b> trong 2–3 tuần để quen 78 lá, rồi chuyển sang 3 lá, sau đó mới dùng các trải lớn.</p>
+          <p><b>Ví dụ 3 lá:</b> xáo, cắt bài, rồi rút lá trên cùng đặt bên trái (Quá khứ), lá tiếp theo ở giữa (Hiện tại), lá thứ ba bên phải (Tương lai). Lật từng lá sang ngang, nhập vào app đúng thứ tự 1 – 2 – 3.</p>
+        </section>
+
+        <section id="g-draw">
+          <h2>Xáo – cắt – bốc – lật</h2>
+          <ol>
+            <li><b>Xoay ngược nửa bộ (nếu dùng lá ngược):</b> chia bộ làm đôi, xoay một nửa 180° rồi gộp lại. Hoặc trộn úp trên mặt bàn theo vòng tròn.</li>
+            <li><b>Xáo bài</b> trong lúc nghĩ về câu hỏi, đến khi bạn thấy "đủ".</li>
+            <li><b>Cắt bài:</b> theo truyền thống dùng tay trái, chia thành 3 chồng, rồi gộp lại theo thứ tự trực giác chọn. Waite hướng dẫn cắt bài ba lần, giữ mặt bài úp xuống.</li>
+            <li><b>Bốc:</b> lấy lần lượt từ trên cùng, hoặc trải hình quạt và chọn bằng trực giác. Đặt mỗi lá vào vị trí theo đúng thứ tự của trải bài.</li>
+            <li><b>Lật ngang:</b> lật lá sang trái hoặc phải như lật trang sách – không lật từ trên xuống, vì như vậy sẽ đảo chiều xuôi/ngược.</li>
+            <li>Nhập từng lá vào app theo thứ tự vị trí, đánh dấu Xuôi hoặc Ngược.</li>
+          </ol>
+          <div class="rgrid" data-ra-guide></div>
+          <p>Nếu có lá rơi ra khi xáo, nhiều người đọc coi đó là "lá nhảy" – ghi lại và tham khảo, nhưng không đưa vào vị trí của trải bài.</p>
+        </section>
+
+        <section id="g-reversed">
+          <h2>Lá ngược</h2>
+          <p>Lá ngược không có nghĩa là "xấu". Chọn một cách hiểu và dùng nhất quán:</p>
+          <ul>
+            <li><b>Năng lượng bị chặn hoặc chậm:</b> điều lá bài nói đang trễ, chưa trọn vẹn.</li>
+            <li><b>Hướng vào trong:</b> chuyện diễn ra trong suy nghĩ, cảm xúc hơn là sự kiện bên ngoài.</li>
+            <li><b>Thái quá hoặc thiếu hụt:</b> phẩm chất của lá bị đẩy quá mức hoặc không đủ.</li>
+            <li><b>Lá vốn khó (Tòa Tháp, 10 Kiếm…) khi ngược</b> thường dịu đi, hoặc báo giai đoạn tệ nhất đã qua.</li>
+          </ul>
+          <p>Người mới có thể tắt lá ngược trong app và đọc mọi lá theo chiều xuôi; khi quen hãy bật lại để có sắc thái sâu hơn.</p>
+        </section>
+
+        <section id="g-read">
+          <h2>Đọc một trải bài</h2>
+          <ol>
+            <li><b>Nhìn tổng thể trước:</b> bao nhiêu lá Ẩn chính (nhiều = giai đoạn bước ngoặt), bộ nào chiếm ưu thế, bao nhiêu lá ngược, con số nào lặp lại. App tự đếm giúp bạn ở mục "Bức tranh chung".</li>
+            <li><b>Đọc từng lá theo vị trí:</b> cùng một lá ở vị trí "Thử thách" và vị trí "Kết quả" mang sắc thái khác nhau.</li>
+            <li><b>Nhìn tranh:</b> nhân vật nhìn về phía lá nào? Hai lá cạnh nhau "đối mặt" hay "quay lưng"? Trong hệ RWS, hướng nhìn và cử chỉ là manh mối liên kết các lá.</li>
+            <li><b>Kể thành câu chuyện:</b> nối các lá bằng "vì… nên…", "nhưng…", "nếu… thì…".</li>
+            <li><b>Trả lời câu hỏi và chốt hành động:</b> mỗi lần xem nên kết thúc bằng 1–3 việc cụ thể bạn sẽ làm.</li>
+          </ol>
+          <h3>Nguyên tố hỗ trợ và xung khắc</h3>
+          <p>Lửa – Khí hỗ trợ nhau, Nước – Đất hỗ trợ nhau. Lửa – Nước và Khí – Đất làm yếu nhau. Hai lá cạnh nhau cùng nguyên tố thì tăng cường. Đây là kỹ thuật "elemental dignities" của Golden Dawn, hữu ích khi một lá có vẻ mơ hồ.</p>
+        </section>
+
+        <section id="g-timing">
+          <h2>Thời điểm trong tarot</h2>
+          <p>Tarot mô tả xu hướng hơn là ngày giờ chính xác. Nếu cần ước lượng, có ba cách phổ biến (các trường phái không thống nhất – hãy chọn một cách và dùng nhất quán):</p>
+          <ul>
+            <li><b>Tốc độ nguyên tố:</b> Gậy = ngày, Kiếm = tuần, Cốc = tháng, Tiền = năm; con số trên lá là số đơn vị. Ví dụ Ba Gậy ≈ 3 ngày, Năm Kiếm ≈ 5 tuần.</li>
+            <li><b>Chiêm tinh Golden Dawn:</b> mỗi lá số 2–10 ứng với 10 ngày trong năm (một decan). Ví dụ Hai Gậy: Hỏa tinh tại Bạch Dương, khoảng 21/3–30/3. 12 lá Ẩn chính ứng với 12 cung hoàng đạo (Hoàng Đế – Bạch Dương 21/3–19/4…). App hiển thị các mốc này trong phần tra cứu và ở lá kết quả.</li>
+            <li><b>Theo trải bài:</b> dùng trải "Dự báo 7 ngày", "Dự báo tháng" hoặc "12 tháng tới" – mỗi vị trí đã gắn sẵn một khoảng thời gian.</li>
+          </ul>
+        </section>
+
+        <section id="g-others">
+          <h2>Xem cho người khác</h2>
+          <ul>
+            <li><b>Hỏi ý người được xem</b> và để họ tự đặt câu hỏi. Ghi chú trong app rằng họ đã đồng ý.</li>
+            <li><b>Gặp trực tiếp:</b> để họ xáo và cắt bài, bạn bốc và đặt bài. <b>Xem từ xa:</b> bạn xáo trong lúc đọc tên và câu hỏi của họ, hoặc dùng chế độ bốc trong app.</li>
+            <li><b>Không đọc thay người vắng mặt:</b> thay vì "người kia đang nghĩ gì", hãy hỏi "tôi nên hành xử thế nào trong mối quan hệ này".</li>
+            <li><b>Lời lẽ trao quyền:</b> nói "xu hướng", "nếu tiếp tục như hiện tại", "điều bạn có thể làm"; tránh phán chắc chắn, đặc biệt về bệnh tật, tai nạn, cái chết.</li>
+            <li><b>Sức khỏe, tài chính, pháp lý:</b> tarot chỉ để phản tư; hãy khuyên người hỏi gặp bác sĩ, chuyên gia tài chính hoặc luật sư cho quyết định thật.</li>
+            <li><b>Giữ bí mật</b> những gì người khác chia sẻ. Nhật ký trong app được lưu riêng tư cho tài khoản của bạn.</li>
+          </ul>
+          <h3>Chọn lá đại diện (significator)</h3>
+          <p>Trong phương pháp Thập tự Celtic, Waite chọn một lá triều đình đại diện người hỏi: Vua cho người đàn ông trưởng thành, Nữ Hoàng cho người phụ nữ trưởng thành, Hiệp Sĩ cho người trẻ, Tiểu Đồng cho thiếu niên. Ngày nay nhiều người chọn bộ theo tính cách: Gậy cho người sôi nổi, Cốc cho người tình cảm, Kiếm cho người lý trí, Tiền cho người thực tế. Lá đại diện được rút ra trước khi xáo.</p>
+        </section>
+
+        <section id="g-birth">
+          <h2>Lá chủ mệnh và lá năm</h2>
+          <p>Cộng ngày + tháng + năm sinh, rồi cộng các chữ số cho đến khi ≤ 22 (22 = Chàng Khờ). Kết quả là <b>lá nhân cách</b>; rút gọn tiếp về một chữ số là <b>lá linh hồn</b>. Thay năm sinh bằng năm hiện tại để có <b>lá năm cá nhân</b> – chủ đề của năm đó với bạn.</p>
+          <div id="birthcalc" class="panel"></div>
+        </section>
+
+        <section id="g-journal">
+          <h2>Nhật ký và kiểm chứng</h2>
+          <p>Lưu mỗi lần xem kèm câu hỏi và ghi chú. Hết ngày, hết tuần, hết tháng, mở lại và điền "Điều đã thực sự xảy ra". Sau vài tuần bạn sẽ thấy lá nào thường ứng với chuyện gì trong đời mình – đó là "từ điển riêng" chính xác nhất. Tab Nhật ký cũng thống kê những lá xuất hiện nhiều nhất.</p>
+        </section>
+
+        <section id="g-install">
+          <h2>Cài lên Mac &amp; iPhone</h2>
+          <p>Bản cài từ GitHub Pages chạy độc lập, không cần Claude và mở được cả khi không có mạng (sau lần mở đầu tiên). Các bước chi tiết nằm trong file <b>HUONG-DAN.txt</b> đi kèm.</p>
+          <ol>
+            <li>Tạo repo <b>tarot-nha</b> trên GitHub, tải lên các file trong thư mục TarotNha (hoặc <code>git push</code>).</li>
+            <li>Settings → Pages → Branch <b>main</b>, thư mục <b>/ (root)</b> → Save. Sau 1–2 phút có địa chỉ <code>https://tên-bạn.github.io/tarot-nha/</code>.</li>
+            <li>iPhone: mở địa chỉ bằng Safari → nút Chia sẻ → <b>Thêm vào Màn hình chính</b>. Mac: mở bằng Safari → Tệp → <b>Thêm vào Dock</b> (hoặc Chrome → Cài đặt ứng dụng).</li>
+            <li>Đồng bộ nhật ký: tab Nhật ký → <b>Đồng bộ Mac ↔ iPhone</b> → dán cùng một token GitHub (quyền gist) trên cả hai máy. Hoặc dùng mã sao lưu để chuyển tay.</li>
+          </ol>
+          <p>Khi bạn đẩy bản mới lên GitHub, app trên các máy tự tải bản mới ở lần mở kế tiếp.</p>
+        </section>
+
+        <section id="g-limits">
+          <h2>Giới hạn</h2>
+          <p>Tarot là công cụ để suy ngẫm và nhìn vấn đề từ nhiều phía, không thay thế chẩn đoán y khoa, tư vấn tài chính hay pháp lý. Tương lai trong bài là xu hướng của hiện tại – bạn luôn có quyền chọn khác đi. Nếu một lần xem khiến bạn lo âu kéo dài, hãy dừng lại và nói chuyện với người bạn tin cậy.</p>
+        </section>
+      </article>
+    </div>
+  </section>
+</main>
+
+<div id="modal" class="modal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head"><h2 id="modal-title"></h2><button class="xbtn" data-act="closeModal" aria-label="Đóng">×</button></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden role="status"></div>
+
+<script src="cards-major.js"></script>
+<script src="cards-wands-cups.js"></script>
+<script src="cards-swords-pents.js"></script>
+<script src="cards-enrich.js"></script>
+<script src="deck-extra.js"></script>
+<script src="deck-images.js"></script>
+<script src="ritual-art.js"></script>
+<script>document.querySelectorAll('[data-ra-guide]').forEach(function(g){g.innerHTML=RA.guide()});</script>
+<script src="app.js"></script>
+
+</body></html>

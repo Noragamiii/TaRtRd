@@ -1,0 +1,84 @@
+TAROT SMITH-WAITE — HƯỚNG DẪN CÀI ĐẶT
+=====================================
+
+Thư mục này là app hoàn chỉnh, chạy độc lập (không cần Claude), mở được cả khi không có mạng sau lần mở đầu tiên. Gồm 14 file, không có thư mục con:
+
+  index.html, app.js, cards-major.js, cards-wands-cups.js, cards-swords-pents.js,
+  cards-enrich.js, deck-extra.js, deck-images.js, sw.js, manifest.webmanifest,
+  icon-180.png, icon-512.png, README.md (và file này)
+
+deck-images.js chứa ảnh 78 lá và 113 ảnh biểu tượng lấy từ bộ thẻ Tarot Meanings của bạn (~3,5 MB).
+
+
+BƯỚC 1 — ĐƯA LÊN GITHUB (làm một lần, khoảng 10 phút)
+------------------------------------------------------
+Cách A — trên trang web github.com:
+ 1. Đăng nhập github.com. Bấm dấu + ở góc trên → New repository.
+ 2. Tên: tarot-nha. Chọn Public. Tích "Add a README file". Bấm Create repository.
+ 3. Trong repo: Add file → Upload files. Kéo TẤT CẢ các file trong thư mục TarotNha vào
+    (kéo các file, không kéo cả thư mục). Bấm Commit changes.
+    Nếu GitHub hỏi ghi đè README.md thì đồng ý.
+ 4. Settings → Pages. Mục Branch chọn main, thư mục / (root), bấm Save.
+ 5. Đợi 1–2 phút, tải lại trang Settings → Pages sẽ thấy địa chỉ:
+      https://TÊN-CỦA-BẠN.github.io/tarot-nha/
+
+Cách B — dùng Terminal trên Mac (nếu đã quen git):
+    cd ~/Documents/TarotNha
+    git init -b main
+    git add .
+    git commit -m "Tarot Smith-Waite"
+    git remote add origin https://github.com/TÊN-CỦA-BẠN/tarot-nha.git
+    git push -u origin main
+  Rồi bật Pages như bước 4–5 ở trên.
+
+Repo Public nghĩa là ai có địa chỉ cũng mở được app. App không chứa dữ liệu cá nhân:
+nhật ký chỉ nằm trên từng máy (và trong gist bí mật nếu bạn bật đồng bộ).
+
+
+BƯỚC 2 — CÀI LÊN IPHONE
+-----------------------
+ 1. Mở địa chỉ https://TÊN-CỦA-BẠN.github.io/tarot-nha/ bằng Safari.
+ 2. Bấm nút Chia sẻ (ô vuông có mũi tên) → Thêm vào Màn hình chính → Thêm.
+ 3. Mở app từ biểu tượng ngôi sao "Tarot". Lần đầu cần mạng để tải; sau đó mở được khi offline.
+
+
+BƯỚC 3 — CÀI LÊN MAC
+--------------------
+ - Safari (macOS Sonoma trở lên): mở địa chỉ → menu Tệp → Thêm vào Dock.
+ - Hoặc Chrome: mở địa chỉ → biểu tượng cài đặt ở cuối thanh địa chỉ → Cài đặt.
+ - Mở thẳng file index.html trên máy cũng chạy được, nhưng không dùng offline và đồng bộ tốt bằng địa chỉ https.
+
+
+BƯỚC 4 — ĐỒNG BỘ NHẬT KÝ GIỮA MAC VÀ IPHONE
+-------------------------------------------
+Mỗi máy giữ nhật ký riêng. Có 2 cách để gộp:
+
+Cách 1 — Tự động qua GitHub (khuyên dùng):
+ 1. Trên github.com: ảnh đại diện → Settings → Developer settings → Personal access tokens
+    → Tokens (classic) → Generate new token (classic).
+ 2. Note: tarot-nha. Expiration: chọn thời hạn (ví dụ 1 năm). Chỉ tích quyền "gist".
+    Bấm Generate token, chép mã bắt đầu bằng ghp_ (mã chỉ hiện một lần – lưu vào Ghi chú).
+ 3. Trong app: tab Nhật ký → Đồng bộ Mac ↔ iPhone và sao lưu → dán token → Lưu token và đồng bộ.
+ 4. Làm bước 3 trên máy còn lại với CÙNG token. App tự tìm đúng gist và gộp dữ liệu.
+ Từ đó, mỗi lần lưu hay mở app, nhật ký được đồng bộ. Lần xem bị xóa ở máy này cũng được xóa ở máy kia.
+ Lưu ý: gist bí mật không hiện công khai nhưng ai có link gist vẫn xem được – đừng chia sẻ link đó.
+ Token chỉ có quyền gist, không đụng tới repo hay dữ liệu khác của bạn.
+
+Cách 2 — Mã sao lưu (không cần GitHub):
+ Máy gửi: tab Nhật ký → Đồng bộ… → Chép mã sao lưu → gửi sang máy kia (Ghi chú iCloud, AirDrop, tin nhắn).
+ Máy nhận: dán vào ô "Dán mã từ máy khác" → Nhập. Dữ liệu được gộp, không mất bài đã có.
+
+
+BƯỚC 5 — CẬP NHẬT APP
+---------------------
+Khi có bản mới: thay các file trong repo (Upload files, Commit) hoặc git push.
+Lần mở kế tiếp, app trên iPhone và Mac tự tải bản mới (có thể cần mở lại app một lần).
+Nhật ký không bị mất khi cập nhật.
+
+
+LUẬN GIẢI
+---------
+ - Luận giải tự động: chạy ngay trên máy, không cần mạng.
+ - Chép lời nhắc để hỏi Claude: chép toàn bộ trải bài, câu hỏi và yêu cầu trình bày;
+   mở app Claude hoặc claude.ai, dán vào để có bài đọc sâu hơn và hỏi thêm.
+ - Bản mở trên claude.ai còn có nút Luận giải bằng Claude chạy thẳng trong trang.
